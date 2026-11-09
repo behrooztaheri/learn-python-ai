@@ -11,7 +11,7 @@ An interactive, bilingual (Persian and English) course on Python and artificial 
 1. Upload all files in this folder to the root of a public GitHub repository.
 2. In the repository, open Settings > Pages.
 3. Set Source to "Deploy from a branch", Branch to "main", folder "/ (root)", and save.
-4. After a minute or two, the site is at `https://USERNAME.github.io/REPOSITORY/`.
+4. After a minute or two, the site is at `https://behrooztaheri.github.io/REPOSITORY/`.
 
 ## Structure
 
