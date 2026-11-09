@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learn Python and AI | Dr. Behrooz Taheri</title>
+<meta name="description" content="Interactive Persian and English course on Python programming and artificial intelligence, from zero. Run code in the browser or open it in Google Colab.">
+<meta name="author" content="Dr. Behrooz Taheri">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23e8590c'/%3E%3Cpath d='M10 22V10l6 8 6-8v12' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<script>
+  // Apply saved preferences before the first paint so the page does not flicker.
+  (function () {
+    var get = function (k, d) { try { return localStorage.getItem(k) || d; } catch (e) { return d; } };
+    var lang = get("lang", "fa");
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "fa" ? "rtl" : "ltr";
+    var dark = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.dataset.theme = get("theme", dark ? "dark" : "light");
+  })();
+</script>
+</head>
+<body>
+<header class="topbar">
+  <button class="iconbtn only-mobile" id="menuBtn" aria-label="Menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <a class="brand" href="#/"><span class="brand-mark">M</span><span id="brandText"></span></a>
+  <nav class="topnav" id="topnav"></nav>
+  <div class="tools">
+    <div class="searchbox"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="searchInput" type="search" autocomplete="off"></div>
+    <button class="textbtn" id="langBtn"></button>
+    <button class="iconbtn" id="themeBtn" aria-label="Theme"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.500L19 5"/></svg></button>
+  </div>
+</header>
+<div id="app"></div>
+<footer class="footer" id="footer"></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/course-core.js"></script>
+<script src="data/python.js"></script>
+<script src="data/ai-foundations.js"></script>
+<script src="data/ai-models.js"></script>
+<script src="data/ai-deep.js"></script>
+<script src="assets/js/demos.js"></script>
+<script src="assets/js/runner.js"></script>
+<script defer src="assets/js/app.js"></script>
+</body>
+</html>
