@@ -226,6 +226,38 @@ window.Demos = (function () {
         slider(p, tx(lang, "دما", "temperature"), 0, 55, .5, T, function (v) { T = v; draw(); }); r = readout(p); draw();
       } },
 
+    pso: { title: { fa: "ازدحام ذرات", en: "Particle swarm" }, help: { fa: "«گام» را بزن و ببین ذرات چگونه کمینه سراسری را پیدا می‌کنند.", en: "Press Step and watch the particles find the global minimum." },
+      mount: function (h, lang) {
+        var c = canvas(h, 340, 340), p = panel(h), r = seeded(17), P = [], t = null, it = 0, best, w = .7, cc = 1.5, res;
+        var F = function (a, b) { return 20 + a * a + b * b - 10 * (Math.cos(6.283 * a) + Math.cos(6.283 * b)); };
+        var bg = document.createElement("canvas"); bg.width = bg.height = 170; var bx = bg.getContext("2d");
+        for (var a = 0; a < 170; a++) for (var b = 0; b < 170; b++) { var v = F(a / 170 * 10.24 - 5.12, b / 170 * 10.24 - 5.12); var g = 255 - Math.min(1, v / 80) * 185; bx.fillStyle = "rgb(" + g + "," + (g - 25) + ",255)"; bx.fillRect(a, b, 1, 1); }
+        function init() { P = []; best = { f: 1e9 }; it = 0; for (var i = 0; i < 26; i++) { var x = r() * 10.24 - 5.12, y = r() * 10.24 - 5.12, q = { x: x, y: y, vx: 0, vy: 0, bx: x, by: y, bf: F(x, y) }; P.push(q); if (q.bf < best.f) best = { f: q.bf, x: x, y: y }; } draw(); }
+        function step() { P.forEach(function (q) { q.vx = w * q.vx + cc * r() * (q.bx - q.x) + cc * r() * (best.x - q.x); q.vy = w * q.vy + cc * r() * (q.by - q.y) + cc * r() * (best.y - q.y); q.x = Math.max(-5.12, Math.min(5.12, q.x + q.vx)); q.y = Math.max(-5.12, Math.min(5.12, q.y + q.vy)); var fv = F(q.x, q.y); if (fv < q.bf) { q.bf = fv; q.bx = q.x; q.by = q.y; } if (fv < best.f) best = { f: fv, x: q.x, y: q.y }; }); it++; draw(); if (it > 150) halt(); }
+        function halt() { clearInterval(t); t = null; }
+        function draw() { c.x.imageSmoothingEnabled = true; c.x.drawImage(bg, 0, 0, 340, 340); var S = function (v) { return (v + 5.12) / 10.24 * 340; }; P.forEach(function (q) { dot(c.x, S(q.x), S(q.y), 4, C.b); }); dot(c.x, S(best.x), S(best.y), 7, C.c); res.textContent = "iteration = " + it + "\nbest f = " + f(best.f) + "\nglobal minimum = 0"; }
+        slider(p, "inertia w", 0, 1, .05, w, function (v) { w = v; }); slider(p, "c1 = c2", 0, 2.5, .1, cc, function (v) { cc = v; });
+        var row = document.createElement("div"); row.className = "row"; p.appendChild(row); button(row, tx(lang, "گام", "Step"), step); button(row, tx(lang, "اجرا / توقف", "Run / Pause"), function () { if (t) halt(); else t = setInterval(step, 120); }); button(row, tx(lang, "از نو", "Reset"), function () { halt(); init(); });
+        res = readout(p); init();
+        var ob = new MutationObserver(function () { if (!document.body.contains(c.el)) { halt(); ob.disconnect(); } }); ob.observe(document.getElementById("app"), { childList: true });
+      } },
+
+    game: { title: { fa: "جدول پاداش و تعادل نش", en: "Payoff table and Nash equilibrium" }, help: { fa: "پاداش‌ها را عوض کن. بهترین پاسخ هر بازیکن پررنگ می‌شود و خانه سبز تعادل نش خالص است.", en: "Edit the payoffs. Best responses become bold, and a green cell is a pure Nash equilibrium." },
+      mount: function (h, lang) {
+        var G = [[[-1, -1], [-3, 0]], [[0, -3], [-2, -2]]], grid = document.createElement("div"); grid.className = "gameg"; h.appendChild(grid); var p = panel(h), r = readout(p);
+        function up() {
+          var nash = [], html = ""; var names = [tx(lang, "A", "A"), tx(lang, "B", "B")];
+          grid.innerHTML = '<div></div><div class="gh">P2: ' + names[0] + '</div><div class="gh">P2: ' + names[1] + "</div>";
+          [0, 1].forEach(function (i) { var l = document.createElement("div"); l.className = "gh"; l.textContent = "P1: " + names[i]; grid.appendChild(l); [0, 1].forEach(function (j) {
+            var br1 = G[i][j][0] >= G[1 - i][j][0], br2 = G[i][j][1] >= G[i][1 - j][1], cell = document.createElement("div"); cell.className = "gc" + (br1 && br2 ? " eq" : "");
+            [0, 1].forEach(function (k) { var inp = document.createElement("input"); inp.type = "number"; inp.value = G[i][j][k]; if (k ? br2 : br1) inp.className = "br"; inp.onchange = function () { G[i][j][k] = +inp.value; up(); }; cell.appendChild(inp); });
+            grid.appendChild(cell); if (br1 && br2) nash.push("(" + names[i] + ", " + names[j] + ")"); }); });
+          var a = G[0][0][1] - G[0][1][1] - G[1][0][1] + G[1][1][1], b = G[0][0][0] - G[1][0][0] - G[0][1][0] + G[1][1][0], ps = a ? (G[1][1][1] - G[1][0][1]) / a : NaN, qs = b ? (G[1][1][0] - G[0][1][0]) / b : NaN, mix = ps > 0 && ps < 1 && qs > 0 && qs < 1;
+          r.textContent = tx(lang, "نش خالص: ", "Pure Nash: ") + (nash.join(" ") || tx(lang, "ندارد", "none")) + "\n" + tx(lang, "نش مختلط: ", "Mixed Nash: ") + (mix ? "P1 plays A with p = " + f(ps) + "\nP2 plays A with q = " + f(qs) : tx(lang, "ندارد (درونی)", "no interior one"));
+        }
+        [["Prisoner's Dilemma", [[[-1, -1], [-3, 0]], [[0, -3], [-2, -2]]]], ["Matching Pennies", [[[1, -1], [-1, 1]], [[-1, 1], [1, -1]]]], ["Battle of the Sexes", [[[2, 1], [0, 0]], [[0, 0], [1, 2]]]], ["Stag Hunt", [[[4, 4], [0, 3]], [[3, 0], [3, 3]]]]].forEach(function (x) { button(p, x[0], function () { G = JSON.parse(JSON.stringify(x[1])); up(); }); }); p.appendChild(r); up();
+      } },
+
     sugeno: { title: { fa: "محاسبه لایه‌به‌لایه ANFIS", en: "ANFIS layer by layer" }, help: { fa: "یک سیستم دو قاعده‌ای سوگنو؛ ورودی‌ها را تغییر بده.", en: "A two-rule Sugeno system; change the inputs." },
       mount: function (h, lang) {
         var p = panel(h), x = 3, y = 4, q = panel(h), r = readout(q);

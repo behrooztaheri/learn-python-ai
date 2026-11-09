@@ -25,35 +25,41 @@ Python is readable, free, and has powerful libraries for data and AI.
 
 L({ id: "py-install",
   fa: ["نصب پایتون", R`## ویندوز
-- به [python.org/downloads](https://www.python.org/downloads/) برو و نسخه پایدار را دانلود کن.
-- در اولین صفحه نصب، گزینه **Add python.exe to PATH** را حتماً تیک بزن و Install Now را انتخاب کن.
-- برنامه Terminal یا PowerShell را باز کن و نسخه را بررسی کن.
+روش رسمی و فعلی python.org برای ویندوز، برنامه **Python Install Manager** است. مراحل را تصویری دنبال کن:
 
-## مک
-روی مک از همان سایت نصب‌کننده را بگیر. در ترمینال دستور ~python3~ را به کار ببر.
+[[walk:win]]
 
-## لینوکس
-در اوبونتو و دبیان با ~apt~ نصب کن.
+## روش قدیمی ویندوز
+نصب‌کننده کامل منسوخ شده و برای نسخه ۳٫۱۶ به بعد ساخته نمی‌شود؛ فقط اگر روش بالا روی سیستمت کار نکرد از آن استفاده کن.
 
-!اگر در ویندوز پیام python is not recognized دیدی، گزینه PATH تیک نخورده است. نصب‌کننده را دوباره اجرا کن، Modify را بزن و Add Python to environment variables را فعال کن.`],
+[[walk:winfull]]
+
+## مک و لینوکس
+[[walk:mac]]
+
+!در مک و لینوکس معمولاً به‌جای ~python~ از ~python3~ و به‌جای ~pip~ از ~pip3~ استفاده می‌شود.`],
   en: ["Installing Python", R`## Windows
-- Go to [python.org/downloads](https://www.python.org/downloads/) and download the stable version.
-- On the first installer screen, tick **Add python.exe to PATH**, then choose Install Now.
-- Open Terminal or PowerShell and check the version.
+The current official way from python.org is the **Python Install Manager**. Follow the steps visually:
 
-## macOS
-Use the installer from the same site. In the terminal, use the command ~python3~.
+[[walk:win]]
 
-## Linux
-On Ubuntu or Debian, install it with ~apt~.
+## The older Windows method
+The full installer is deprecated and will not be produced for Python 3.16 or later. Use it only if the method above does not work on your system.
 
-!If Windows says python is not recognized, PATH was not ticked. Run the installer again, choose Modify, and enable Add Python to environment variables.`],
-  code: [SH(`# Windows\npython --version\n\n# macOS and Linux\npython3 --version`), SH(`# Ubuntu / Debian\nsudo apt update\nsudo apt install python3 python3-pip python3-venv`)],
-  quiz: [Q("در نصب ویندوز کدام گزینه مهم است؟", "Which option matters during the Windows install?", ["Add python.exe to PATH", "Install for Linux", "Disable pip"], null, 0, "با این گزینه، دستور python در ترمینال شناخته می‌شود.", "It lets the terminal find the python command.")]
+[[walk:winfull]]
+
+## macOS and Linux
+[[walk:mac]]
+
+!On macOS and Linux, use ~python3~ instead of ~python~ and ~pip3~ instead of ~pip~.`],
+  code: [SH(`# Windows\npy install\npython --version\npy list\n\n# macOS and Linux\npython3 --version`), SH(`# Ubuntu / Debian\nsudo apt update\nsudo apt install python3 python3-pip python3-venv`)],
+  quiz: [Q("اگر در ویندوز با تایپ python فروشگاه Microsoft باز شد چه کنیم؟", "If typing python on Windows opens the Microsoft Store, what should you do?", ["App execution aliases را بررسی کنیم", "ویندوز را دوباره نصب کنیم", "دستور را بزرگ بنویسیم"], ["Check App execution aliases", "Reinstall Windows", "Write the command in capitals"], 0, "این گزینه‌ها تعیین می‌کنند دستور python به کدام برنامه برود.", "These settings decide which program the python command opens.")]
 });
 
 L({ id: "py-terminal",
-  fa: ["کار با ترمینال", R`ترمینال پنجره‌ای است که با تایپ دستور با سیستم کار می‌کنی. برای اجرای برنامه‌ها و نصب کتابخانه‌ها به چند دستور ساده نیاز داری.
+  fa: ["کار با ترمینال", R`[[walk:terminal]]
+
+ترمینال پنجره‌ای است که با تایپ دستور با سیستم کار می‌کنی. برای اجرای برنامه‌ها و نصب کتابخانه‌ها به چند دستور ساده نیاز داری.
 
 - ~cd~ رفتن به پوشه
 - ~ls~ دیدن فایل‌های پوشه (در خط فرمان قدیمی ویندوز ~dir~)
@@ -61,7 +67,9 @@ L({ id: "py-terminal",
 - ~python file.py~ اجرای یک برنامه
 
 !کلید Tab نام فایل را کامل می‌کند و کلید بالا دستور قبلی را برمی‌گرداند.`],
-  en: ["Using the terminal", R`The terminal is a window where you control the system by typing commands. You only need a few to run programs and install libraries.
+  en: ["Using the terminal", R`[[walk:terminal]]
+
+The terminal is a window where you control the system by typing commands. You only need a few to run programs and install libraries.
 
 - ~cd~ change folder
 - ~ls~ list files (~dir~ in the old Windows command prompt)
@@ -73,7 +81,9 @@ L({ id: "py-terminal",
 });
 
 L({ id: "py-vscode",
-  fa: ["کار با VS Code", R`VS Code ویرایشگری رایگان و محبوب است.
+  fa: ["کار با VS Code", R`[[walk:vscode]]
+
+VS Code ویرایشگری رایگان و محبوب است.
 
 ## راه‌اندازی
 - آن را از [code.visualstudio.com](https://code.visualstudio.com/) نصب کن.
@@ -86,7 +96,9 @@ L({ id: "py-vscode",
 - کلیدهای Ctrl و علامت بک‌تیک، ترمینال داخلی را باز می‌کنند.
 - روی شماره خط کلیک کن تا Breakpoint بگذاری، سپس F5 را بزن تا برنامه خط‌به‌خط اجرا شود.
 - فایل با پسوند ~ipynb~ در VS Code به‌صورت نوت‌بوک باز می‌شود.`],
-  en: ["Using VS Code", R`VS Code is a free and popular editor.
+  en: ["Using VS Code", R`[[walk:vscode]]
+
+VS Code is a free and popular editor.
 
 ## Setup
 - Install it from [code.visualstudio.com](https://code.visualstudio.com/).
@@ -103,7 +115,9 @@ L({ id: "py-vscode",
 });
 
 L({ id: "py-colab",
-  fa: ["کار با Google Colab", R`Colab یک نوت‌بوک پایتون رایگان در مرورگر است و به نصب نیاز ندارد. با حساب گوگل به [colab.research.google.com](https://colab.research.google.com/) برو.
+  fa: ["کار با Google Colab", R`[[walk:colab]]
+
+Colab یک نوت‌بوک پایتون رایگان در مرورگر است و به نصب نیاز ندارد. با حساب گوگل به [colab.research.google.com](https://colab.research.google.com/) برو.
 
 - هر نوت‌بوک از **سلول کد** و **سلول متن** ساخته شده است.
 - Shift+Enter سلول را اجرا می‌کند.
@@ -112,7 +126,9 @@ L({ id: "py-colab",
 - فایل‌های Colab پس از پایان نشست پاک می‌شوند؛ نتیجه مهم را در Google Drive ذخیره کن.
 
 !در هر درس این سایت، دکمه Colab نوت‌بوک همان درس را باز می‌کند. با File > Save a copy in Drive نسخه خودت را نگه دار.`],
-  en: ["Using Google Colab", R`Colab is a free Python notebook in your browser, with nothing to install. Sign in with Google at [colab.research.google.com](https://colab.research.google.com/).
+  en: ["Using Google Colab", R`[[walk:colab]]
+
+Colab is a free Python notebook in your browser, with nothing to install. Sign in with Google at [colab.research.google.com](https://colab.research.google.com/).
 
 - A notebook is made of **code cells** and **text cells**.
 - Shift+Enter runs a cell.
@@ -125,12 +141,16 @@ L({ id: "py-colab",
 });
 
 L({ id: "py-venv",
-  fa: ["pip و محیط مجازی", R`~pip~ کتابخانه‌ها را نصب می‌کند. **محیط مجازی** برای هر پروژه پوشه‌ای جدا می‌سازد تا نسخه کتابخانه‌های پروژه‌ها با هم تداخل نکنند.
+  fa: ["pip و محیط مجازی", R`[[walk:venv]]
+
+~pip~ کتابخانه‌ها را نصب می‌کند. **محیط مجازی** برای هر پروژه پوشه‌ای جدا می‌سازد تا نسخه کتابخانه‌های پروژه‌ها با هم تداخل نکنند.
 
 فایل ~requirements.txt~ فهرست کتابخانه‌ها را نگه می‌دارد تا پروژه روی کامپیوتر دیگر هم آماده شود.
 
 !اگر PowerShell اجرای activate را مسدود کرد، این دستور را یک بار اجرا کن: ~Set-ExecutionPolicy -Scope CurrentUser RemoteSigned~`],
-  en: ["pip and virtual environments", R`~pip~ installs libraries. A **virtual environment** gives each project its own folder, so library versions of different projects do not clash.
+  en: ["pip and virtual environments", R`[[walk:venv]]
+
+~pip~ installs libraries. A **virtual environment** gives each project its own folder, so library versions of different projects do not clash.
 
 The file ~requirements.txt~ lists the libraries so that the project can be set up on another computer.
 

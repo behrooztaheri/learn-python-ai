@@ -23,6 +23,8 @@
     f3t: ["آزمایشگاه تعاملی", "Interactive labs"], f3p: ["با کلیک و اسلایدر مفهوم را ببین.", "See the ideas with clicks and sliders."],
     f4t: ["آزمون و پیشرفت", "Quizzes and progress"], f4p: ["پیشرفت تو روی همین دستگاه ذخیره می‌شود.", "Your progress is saved on this device."],
     prev: ["درس قبلی", "Previous"], next: ["درس بعدی", "Next"], backHome: ["بازگشت به اول سایت", "Back to start"], backTrack: ["فهرست مسیر", "Path overview"],
+    exT: ["تمرین", "Exercises"], showAns: ["دیدن پاسخ", "Show the answer"], projectBadge: ["پروژه این بخش", "Section project"],
+    cmActual: ["کلاس واقعی", "Actual class"], cmPred: ["پیش‌بینی مدل", "Predicted"], cmPos: ["مثبت", "Positive"], cmNeg: ["منفی", "Negative"],
     markDone: ["این درس را تمام کردم", "Mark as finished"], isDone: ["تمام شده", "Finished"],
     code: ["کد", "Code"], quiz: ["آزمون کوتاه", "Quick quiz"], lab: ["آزمایشگاه تعاملی", "Interactive lab"], correct: ["درست است.", "Correct."], wrong: ["درست نیست، دوباره فکر کن.", "Not quite, try again."],
     copy: ["کپی", "Copy"], copied: ["کپی شد", "Copied"], reset: ["بازنشانی", "Reset"], run: ["اجرا", "Run"], stop: ["توقف", "Stop"],
@@ -50,15 +52,31 @@
     return esc(t).replace(/~([^~]+)~/g, '<code dir="ltr">$1</code>').replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
       .replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
   }
+  function table(b) {
+    var rows = b.split("\n").map(function (r) { return r.trim().replace(/^\||\|$/g, "").split("|").map(function (c) { return c.trim(); }); })
+      .filter(function (r) { return !/^-+$/.test(r[0]); });
+    return '<div class="tablewrap"><table><thead><tr>' + rows[0].map(function (c) { return "<th>" + inline(c) + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      rows.slice(1).map(function (r) { return "<tr>" + r.map(function (c) { return "<td>" + inline(c) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div>";
+  }
+  function confusion(v) {
+    return '<div class="cm" dir="ltr"><div></div><div class="ch" style="grid-column:span 2">' + T("cmActual") + '</div><div class="cv">' + T("cmPred") + '</div><div class="ch2">' + T("cmPos") + '</div><div class="ch2">' + T("cmNeg") + '</div>' +
+      '<div class="cs">' + T("cmPos") + '</div><div class="g"><b>TP</b>' + v[0] + '</div><div class="r"><b>FP</b>' + v[1] + "</div>" +
+      '<div class="cs">' + T("cmNeg") + '</div><div class="r"><b>FN</b>' + v[2] + '</div><div class="g"><b>TN</b>' + v[3] + "</div></div>";
+  }
   function md(src) {
     var out = [], list = null;
-    src.trim().split(/\n\s*\n|\n(?=- |## |!)/).forEach(function (raw) {
+    src.trim().replace(/^(?!\|)(.+)\n(?=\|)/gm, "$1\n\n").split(/\n\s*\n|\n(?=- |## |!|\[\[|\$\$)/).forEach(function (raw) {
       var b = raw.trim();
       if (!b) return;
       if (b.indexOf("- ") === 0) { if (!list) { list = []; } list.push("<li>" + inline(b.slice(2)) + "</li>"); return; }
       if (list) { out.push("<ul>" + list.join("") + "</ul>"); list = null; }
       if (b.indexOf("## ") === 0) out.push("<h3>" + inline(b.slice(3)) + "</h3>");
       else if (b[0] === "!") out.push('<aside class="note">' + inline(b.slice(1).trim()) + "</aside>");
+      else if (b[0] === "|") out.push(table(b));
+      else if (/^\[\[c:\d+\]\]$/.test(b)) out.push('<div class="codeslot" data-c="' + b.match(/\d+/)[0] + '"></div>');
+      else if (b.indexOf("[[fig:") === 0) { var f = b.slice(6, -2).split("|"); out.push('<figure><img loading="lazy" src="assets/img/lessons/' + esc(f[0]) + '" alt="' + esc(f[1] || "") + '"><figcaption>' + inline(f[1] || "") + "</figcaption></figure>"); }
+      else if (b.indexOf("[[walk:") === 0) out.push('<div class="walk" data-w="' + esc(b.slice(7, -2)) + '"></div>');
+      else if (b.indexOf("[[cm:") === 0) out.push(confusion(b.slice(5, -2).split(",").map(Number)));
       else if (b.indexOf("$$") === 0) out.push('<div class="math" dir="ltr">' + esc(b) + "</div>");
       else out.push("<p>" + inline(b) + "</p>");
     });
@@ -135,12 +153,21 @@
     function pager() {
       return '<nav class="pager">' + (p ? '<a href="#/l/' + p.id + '"><small>' + T("prev") + "</small>" + esc(title(p)) + "</a>" : "<span></span>") + '<a class="mid" href="#/">' + T("backHome") + "</a>" + (n ? '<a href="#/l/' + n.id + '" class="nx"><small>' + T("next") + "</small>" + esc(title(n)) + "</a>" : '<a href="#/t/' + l.track + '" class="nx"><small>' + T("backTrack") + "</small>" + esc(name(COURSE.tracks[l.track])) + "</a>") + "</nav>";
     }
-    app.innerHTML = '<div class="layout">' + sidebar(l.track, l.id) + '<main class="main lesson"><nav class="crumb"><a href="#/">' + T("home") + '</a><span>/</span><a href="#/t/' + l.track + '">' + esc(name(COURSE.tracks[l.track])) + "</a><span>/</span><b>" + esc(name(mod)) + "</b></nav><h1>" + esc(title(l)) + '</h1><article class="prose">' + md(l[lang][1]) + '</article><div id="labHost"></div><div id="codeHost"></div><div id="quizHost"></div><button class="finish ' + (done[id] ? "is" : "") + '" id="finish">' + T(done[id] ? "isDone" : "markDone") + "</button>" + pager() + "</main></div>";
+    var badge = l.project ? '<p class="pbadge">' + T("projectBadge") + "</p>" : "";
+    app.innerHTML = '<div class="layout">' + sidebar(l.track, l.id) + '<main class="main lesson"><nav class="crumb"><a href="#/">' + T("home") + '</a><span>/</span><a href="#/t/' + l.track + '">' + esc(name(COURSE.tracks[l.track])) + "</a><span>/</span><b>" + esc(name(mod)) + "</b></nav>" + badge + "<h1>" + esc(title(l)) + '</h1><article class="prose">' + md(l[lang][1]) + '</article><div id="labHost"></div><div id="codeHost"></div><div id="exHost"></div><div id="quizHost"></div><button class="finish ' + (done[id] ? "is" : "") + '" id="finish">' + T(done[id] ? "isDone" : "markDone") + "</button>" + pager() + "</main></div>";
     var cells = [];
-    if (l.code.length) {
+    app.querySelectorAll(".walk").forEach(function (w) { mountWalk(w, w.dataset.w, lang); });
+    var placed = {};
+    app.querySelectorAll(".codeslot").forEach(function (s) {
+      var i = +s.dataset.c; if (!l.code[i]) return;
+      placed[i] = 1; var el = Runner.cell(l.code[i], l.id, T, lang); s.appendChild(el); cells.push(el);
+    });
+    var rest = l.code.filter(function (c, i) { return !placed[i]; });
+    if (rest.length) {
       var ch = $("codeHost"); ch.innerHTML = "<h2>" + T("code") + "</h2>";
-      l.code.forEach(function (c) { var el = Runner.cell(c, l.id, T, lang); ch.appendChild(el); cells.push(el); });
+      rest.forEach(function (c) { var el = Runner.cell(c, l.id, T, lang); ch.appendChild(el); cells.push(el); });
     }
+    if (l.ex.length) renderEx($("exHost"), l);
     if (l.demo && Demos[l.demo]) mountLab($("labHost"), l.demo);
     if (l.quiz.length) renderQuiz($("quizHost"), l);
     $("finish").onclick = function () {
@@ -151,6 +178,20 @@
     math(app);
     cells.forEach(function (c) { c._refresh(); });
     store.set("last", id);
+  }
+  function renderEx(host, l) {
+    host.innerHTML = "<h2>" + T("exT") + "</h2>";
+    l.ex.forEach(function (x, i) {
+      var b = document.createElement("div"); b.className = "exercise";
+      b.innerHTML = '<p><span class="exn">' + num(i + 1) + "</span>" + inline(x.t[lang]) + "</p>";
+      var d = document.createElement("details"); d.innerHTML = "<summary>" + T("showAns") + "</summary>" + (x.a[lang] ? "<p>" + inline(x.a[lang]) + "</p>" : "");
+      if (x.code) {
+        var el = Runner.cell({ src: x.code }, null, T, lang); d.appendChild(el);
+        d.addEventListener("toggle", function () { el._refresh(); });
+      }
+      b.appendChild(d); host.appendChild(b);
+    });
+    math(host);
   }
   function mountLab(host, key) {
     var d = Demos[key];
