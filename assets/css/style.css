@@ -314,3 +314,7 @@ figcaption{color:var(--mut);font-size:.87rem;margin-top:4px}
 .labitem summary small{color:var(--mut)}
 .labitem .lab{border:0;padding:0;margin:8px 0 0}
 .labslot .lab{margin:14px 0}
+/* Answer box for input() */
+.askbox{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0;padding:8px 10px;border:1px dashed var(--brand);border-radius:8px;font-family:var(--mono,monospace);font-size:.92em}
+.askbox span{white-space:pre-wrap}
+.askbox input{flex:1;min-width:120px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:inherit;font:inherit}

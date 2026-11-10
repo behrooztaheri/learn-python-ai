@@ -7,7 +7,7 @@
 var PYODIDE = "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/";
 importScripts(PYODIDE + "pyodide.js");
 
-var py = null;
+var py = null, answer = null;
 var ready = (async function () {
   py = await loadPyodide({ indexURL: PYODIDE });
   py.setStdout({ batched: function (s) {
@@ -27,10 +27,25 @@ var ready = (async function () {
     "os.makedirs('/home/pyodide/work', exist_ok=True)",
     "os.chdir('/home/pyodide/work')",
     "_stdin = []",
+    // input(): use a value typed in the input box first; otherwise ask the user on the page.
+    // Newer browsers can pause Python while waiting (run_sync). Older ones stop the run, ask, and run the code again with the answer.
+    "class _NeedInput(BaseException): pass",
+    "_ask_prompt = ['']",
     "def _input(prompt=''):",
-    "    if prompt: print(prompt, end='')",
-    "    value = _stdin.pop(0) if _stdin else ''",
-    "    print(value)",
+    "    prompt = '' if prompt is None else str(prompt)",
+    "    if _stdin:",
+    "        value = _stdin.pop(0)",
+    "    else:",
+    "        try:",
+    "            from pyodide.ffi import can_run_sync, run_sync",
+    "            ok = can_run_sync()",
+    "        except Exception:",
+    "            ok = False",
+    "        if not ok:",
+    "            _ask_prompt[0] = prompt",
+    "            raise _NeedInput(prompt)",
+    "        value = str(run_sync(_ask_js(prompt)))",
+    "    print(prompt + value)",
     "    return value",
     "builtins.input = _input",
     "def _figures():",
@@ -97,6 +112,9 @@ var ready = (async function () {
     "            out.append([p, os.path.getsize(p)])",
     "    return out"
   ].join("\n"));
+  py.globals.set("_ask_js", function (prompt) {
+    return new Promise(function (res) { answer = res; postMessage({ type: "ask", prompt: prompt }); });
+  });
   return py;
 })();
 
@@ -126,6 +144,10 @@ async function runCode(msg) {
   note("running");
   py.globals.get("_stdin").clear();
   (msg.stdin || []).forEach(function (l) { py.globals.get("_stdin").append(l); });
+  // The same seed on a re-run after input(), so random numbers do not change between runs.
+  var seed = msg.seed || 1;
+  py.runPython("import random; random.seed(" + seed + ")\nif 'numpy' in " + JSON.stringify(code.indexOf("numpy") >= 0 ? "numpy" : "") +
+    ":\n    import numpy; numpy.random.seed(" + (seed % 4294967295) + ")");
   // If a library needs another module that was not installed yet, install it and run the code again (at most 3 times).
   var tried = {};
   for (var attempt = 0; ; attempt++) {
@@ -150,6 +172,7 @@ async function runCode(msg) {
 
 onmessage = async function (ev) {
   var msg = ev.data;
+  if (msg.type === "answer") { var a = answer; answer = null; if (a) a(msg.value); return; }
   try {
     await ready;
     if (msg.type === "put") {
@@ -183,6 +206,12 @@ onmessage = async function (ev) {
   } catch (e) {
     // Show only the part of the traceback that belongs to the student's code.
     var t = String(e.message || e), i = t.indexOf('File "<exec>"');
+    if (/_NeedInput/.test(t)) {
+      // input() had no value: ask the page, which runs the code again with the answer.
+      try { py.globals.get("_figures")(); } catch (x) {}
+      postMessage({ type: "need", prompt: py.globals.get("_ask_prompt").get(0) });
+      return;
+    }
     var hint = "";
     if (/unknown url type: https|NetworkError|Failed to execute 'send'|CORS/.test(t)) hint = "\nHint: this website blocks downloads from other sites (CORS). Download the file to your computer, then use the Upload file button.";
     if (/No module named/.test(t)) hint = "\nHint: this package is not available for the browser. Try the Colab button.";

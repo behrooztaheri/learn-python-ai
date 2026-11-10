@@ -28,7 +28,7 @@
     markDone: ["این درس را تمام کردم", "Mark as finished"], isDone: ["تمام شده", "Finished"],
     code: ["کد", "Code"], quiz: ["آزمون کوتاه", "Quick quiz"], lab: ["آزمایشگاه تعاملی", "Interactive lab"], correct: ["درست است.", "Correct."], wrong: ["درست نیست، دوباره فکر کن.", "Not quite, try again."],
     copy: ["کپی", "Copy"], copied: ["کپی شد", "Copied"], reset: ["بازنشانی", "Reset"], run: ["اجرا", "Run"], stop: ["توقف", "Stop"],
-    running: ["در حال اجرا...", "Running..."], loadingPy: ["در حال بارگذاری پایتون؛ بار اول چند ثانیه طول می‌کشد...", "Loading Python. The first time takes a few seconds..."],
+    running: ["در حال اجرا...", "Running..."], typeAnswer: ["برنامه منتظر ورودی است؛ جواب را در کادر بنویس و Enter بزن.", "The program is waiting for input. Type your answer in the box and press Enter."], loadingPy: ["در حال بارگذاری پایتون؛ بار اول چند ثانیه طول می‌کشد...", "Loading Python. The first time takes a few seconds..."],
     noOutput: ["اجرا شد؛ خروجی چاپی نداشت.", "Ran successfully, with no printed output."], runError: ["برنامه با خطا متوقف شد. پیام بالا را بخوان.", "The program stopped with an error. Read the message above."],
     pyFail: ["پایتون بارگذاری نشد. اتصال اینترنت را بررسی کن یا از دکمه Colab استفاده کن.", "Python could not be loaded. Check your connection or use the Colab button."],
     stopped: ["اجرا متوقف شد.", "Stopped."], stdin: ["ورودی برنامه (هر خط یک ورودی):", "Program input (one value per line):"], colabOnly: ["این کد فقط در Colab یا کامپیوتر خودت اجرا می‌شود", "This code runs in Colab or on your own computer"],

@@ -14,6 +14,7 @@ window.Runner = (function () {
       if (m.type === "fatal") { setState("failed"); if (current) current.fail(m.text); return; }
       if (!current) return;
       if (m.type === "clear") { if (current.clear) current.clear(); return; }
+      if (m.type === "ask" || m.type === "need") { ask(current, m); return; }
       if (m.type === "info") { if (current.info) current.info(m.text); return; }
       if (m.type === "out") current.out(m.text, false);
       if (m.type === "err") current.out(m.text, true);
@@ -25,7 +26,37 @@ window.Runner = (function () {
     };
     worker.onerror = function () { setState("failed"); if (current) { current.fail(); current = null; } };
   }
-  function send(job) { current = job; setState("running"); worker.postMessage({ code: job.code, stdin: job.stdin }); }
+  function send(job) {
+    current = job; setState("running");
+    if (!job.seed) job.seed = 1 + Math.floor(Math.random() * 1e9);
+    job.stdin = (job.stdin || []).slice();
+    while (job.stdin.length && job.stdin[job.stdin.length - 1] === "") job.stdin.pop();   // an empty box is not an empty answer
+    worker.postMessage({ code: job.code, stdin: job.stdin, seed: job.seed });
+  }
+  // input() in the program: show a small answer box in the output.
+  function ask(job, m) {
+    function reply(v) {
+      if (current !== job) return;
+      if (m.type === "ask") { worker.postMessage({ type: "answer", value: v }); return; }
+      job.stdin.push(v);                              // older browsers: run again with all answers so far
+      if (job.clear) job.clear();
+      worker.postMessage({ code: job.code, stdin: job.stdin, seed: job.seed });
+    }
+    if (job.ask) { job.ask(m.prompt, reply); return; }
+    var v = window.prompt(m.prompt || "input()");
+    if (v === null) stop(); else reply(v);
+  }
+  // The answer box. cb(value) is called once, when the user presses Enter or the button.
+  function askBox(prompt, cb) {
+    var f = document.createElement("form"); f.className = "askbox"; f.dir = "ltr";
+    var s = document.createElement("span"); s.textContent = prompt || "input()";
+    var i = document.createElement("input"); i.autocomplete = "off"; i.spellcheck = false;
+    var b = document.createElement("button"); b.className = "cbtn"; b.type = "submit"; b.textContent = "↵";
+    f.appendChild(s); f.appendChild(i); f.appendChild(b);
+    f.onsubmit = function (e) { e.preventDefault(); var v = i.value; f.remove(); cb(v); };
+    setTimeout(function () { try { i.focus({ preventScroll: false }); } catch (x) {} }, 0);
+    return f;
+  }
   function run(job) {
     if (!worker) start();
     if (state === "failed") { job.fail(); return; }
@@ -37,6 +68,7 @@ window.Runner = (function () {
     send(job);
   }
   function stop() {
+    document.querySelectorAll(".askbox").forEach(function (f) { f.remove(); });
     if (worker) worker.terminate();
     worker = null;
     var c = current, q = queue; current = null; queue = null;
@@ -152,6 +184,7 @@ window.Runner = (function () {
         waiting: function () { say(T("loadingPy")); },
         info: function (t) { say(T(t === "installing" ? "installing" : "running")); },
         clear: function () { out.innerHTML = ""; out.hidden = true; },
+        ask: function (p, cb) { out.hidden = false; say(T("typeAnswer")); out.appendChild(askBox(p, function (v) { say(T("running")); cb(v); })); },
         out: function (t, e) { say(T("running")); pre(t, e); },
         img: function (d) { out.hidden = false; var i = new Image(); i.src = "data:image/png;base64," + d; i.alt = "plot"; out.appendChild(i); },
         done: function (failed) { setBtn(false); say(failed ? T("runError") : ""); if (!failed && !out.childNodes.length) say(T("noOutput")); },
@@ -174,7 +207,7 @@ window.Runner = (function () {
     return wrap;
   }
 
-  return { run: run, stop: stop, cell: cell, colabUrl: colabUrl, put: put, get: get, rm: rm, ls: ls, ICON: ICON,
+  return { run: run, stop: stop, cell: cell, askBox: askBox, colabUrl: colabUrl, put: put, get: get, rm: rm, ls: ls, ICON: ICON,
     onFiles: function (f) { onFiles.push(f); }, offFiles: function (f) { onFiles = onFiles.filter(function (g) { return g !== f; }); },
     state: function () { return state; } };
 })();
