@@ -10,10 +10,15 @@
 
   var STR = {
     brand: ["مدرسه پایتون و هوش مصنوعی", "Python and AI School"],
-    home: ["خانه", "Home"], python: ["پایتون", "Python"], ai: ["هوش مصنوعی", "AI"], labs: ["آزمایشگاه‌ها", "Labs"], playground: ["محیط کدنویسی", "Playground"], glossary: ["واژه‌نامه", "Glossary"], about: ["مدرس", "Instructor"],
+    home: ["خانه", "Home"], python: ["پایتون", "Python"], math: ["ریاضیات", "Math"], ai: ["هوش مصنوعی", "AI"], labs: ["آزمایشگاه‌ها", "Labs"], playground: ["محیط کدنویسی", "Playground"], glossary: ["واژه‌نامه", "Glossary"], about: ["مدرس", "Instructor"],
     search: ["جستجو در درس‌ها", "Search lessons"], langOther: ["English", "فارسی"],
     heroKick: ["آموزش تعاملی، رایگان و از صفر", "Interactive, free, and from zero"],
-    heroT: ["از کجا می‌خواهی شروع کنی؟", "Where do you want to start?"],
+    heroT: ["پایتون، ریاضیات و هوش مصنوعی را <em>از صفر</em> یاد بگیر", "Learn Python, math and AI <em>from zero</em>"],
+    mathDesc: ["ریاضیِ لازم برای یادگیری ماشین و یادگیری عمیق: جبر خطی، مشتق و گرادیان، احتمال و آمار، و ریاضیِ پشت مدل‌ها", "The math behind machine learning and deep learning: linear algebra, derivatives and gradients, probability and statistics, and the math inside the models"],
+    pathsT: ["سه مسیر یادگیری", "Three learning paths"], step: ["مسیر", "Path"],
+    roadT: ["ترتیب پیشنهادی", "Suggested order"], roadP: ["اگر تازه‌کاری، از پایتون شروع کن. بعد ریاضیات را کنار هوش مصنوعی بخوان تا بفهمی هر مدل از کجا می‌آید.", "If you are new, start with Python. Then read the math alongside AI, so you see where each model comes from."],
+    ctaStart: ["شروع یادگیری", "Start learning"], ctaPlay: ["باز کردن محیط کدنویسی", "Open the playground"],
+    stLessons: ["درس", "lessons"], stLabs: ["آزمایشگاه تعاملی", "interactive labs"], stPaths: ["مسیر یادگیری", "learning paths"], stLang: ["زبان", "languages"], featsT: ["چرا اینجا؟", "Why learn here?"],
     heroP: ["کد را همین‌جا بنویس و اجرا کن، با آزمایشگاه‌ها مفهوم را لمس کن و هر جا خواستی برگرد.", "Write and run code right here, feel each idea in a hands-on lab, and move around freely."],
     pyDesc: ["از نصب پایتون، VS Code و Google Colab تا NumPy، Pandas و نوشتن یک پروژه کامل", "From installing Python, VS Code and Google Colab to NumPy, Pandas and a complete project"],
     aiDesc: ["از مفاهیم پایه تا رگرسیون، طبقه‌بندی، خوشه‌بندی، یادگیری عمیق، منطق فازی و ANFIS", "From the basics to regression, classification, clustering, deep learning, fuzzy logic and ANFIS"],
@@ -39,6 +44,7 @@
     aboutT: ["درباره مدرس", "About the instructor"], aboutRole: ["نویسنده، طراح و مدرس این دوره", "Author, designer and instructor of this course"],
     aboutP: ["این مجموعه برای دانشجویان و علاقه‌مندان همه رشته‌ها طراحی شده است تا پایتون و هوش مصنوعی را از پایه و با تمرین عملی یاد بگیرند.", "This course is designed for students and enthusiasts from every field, to learn Python and AI from the ground up through practice."],
     email: ["ایمیل", "Email"], foot: ["طراحی و تدریس:", "Created and taught by"], notFound: ["این صفحه پیدا نشد.", "This page was not found."], progress: ["پیشرفت", "Progress"], clearSearch: ["", ""],
+    lessonN: ["درس", "Lesson"], mCode: ["کد قابل اجرا", "runnable code blocks"], mQuiz: ["سؤال آزمون", "quiz questions"], mEx: ["تمرین", "exercises"],
     resetProg: ["پاک کردن پیشرفت", "Clear progress"]
   };
   function T(k) { var v = STR[k]; return v ? v[lang === "fa" ? 0 : 1] : k; }
@@ -66,7 +72,7 @@
   }
   function md(src) {
     var out = [], list = null;
-    src.trim().replace(/^(?!\|)(.+)\n(?=\|)/gm, "$1\n\n").split(/\n\s*\n|\n(?=- |## |!|\[\[|\$\$)/).forEach(function (raw) {
+    src.trim().replace(/^(## .+)\n(?!\n)/gm, "$1\n\n").replace(/^(?!\|)(.+)\n(?=\|)/gm, "$1\n\n").split(/\n\s*\n|\n(?=- |## |!|\[\[|\$\$)/).forEach(function (raw) {
       var b = raw.trim();
       if (!b) return;
       if (b.indexOf("- ") === 0) { if (!list) { list = []; } list.push("<li>" + inline(b.slice(2)) + "</li>"); return; }
@@ -103,22 +109,30 @@
     $("langBtn").textContent = T("langOther");
     $("searchInput").placeholder = T("search");
     var r = location.hash;
-    $("topnav").innerHTML = [["#/", "home"], ["#/t/python", "python"], ["#/t/ai", "ai"], ["#/labs", "labs"], ["#/play", "playground"], ["#/glossary", "glossary"], ["#/about", "about"]]
+    $("topnav").innerHTML = [["#/", "home"], ["#/t/python", "python"], ["#/t/math", "math"], ["#/t/ai", "ai"], ["#/labs", "labs"], ["#/play", "playground"], ["#/glossary", "glossary"], ["#/about", "about"]]
       .map(function (x) { var on = x[0] === "#/" ? (r === "#/" || r === "") : r.indexOf(x[0]) === 0; return '<a href="' + x[0] + '"' + (on ? ' class="on"' : "") + ">" + T(x[1]) + "</a>"; }).join("");
     $("footer").innerHTML = "<span>" + T("foot") + ' <a href="#/about">' + esc(SITE.author.name[lang]) + "</a></span>" +
       '<span class="links"><a href="mailto:' + SITE.author.email + '">Email</a><a href="' + SITE.author.linkedin + '" target="_blank" rel="noopener">LinkedIn</a><a href="' + SITE.author.scholar + '" target="_blank" rel="noopener">Google Scholar</a></span>';
   }
 
   function viewHome() {
-    function card(tr, cls, desc, art) {
+    function card(tr, cls, desc, art, i) {
       var s = trackStats(tr), n = nextOf(tr), mods = COURSE.tracks[tr].modules.length;
-      return '<a class="pathcard ' + cls + '" href="#/t/' + tr + '">' + art + "<h2>" + esc(name(COURSE.tracks[tr])) + "</h2><p>" + T(desc) + '</p><div class="pathmeta"><span>' + num(mods) + " " + T("modules") + "</span><span>" + num(s.n) + " " + T("lessons") + "</span></div>" +
-        '<div class="bar"><i style="width:' + s.pct + '%"></i></div><span class="pathgo">' + T(s.d ? "cont" : "start") + (s.d ? ": " + esc(title(n)) : "") + "</span></a>";
+      return '<a class="pathcard ' + cls + '" href="#/t/' + tr + '"><span class="pathstep">' + T("step") + " " + num(i) + "</span>" + art + "<h2>" + esc(name(COURSE.tracks[tr])) + "</h2><p>" + T(desc) + '</p><div class="pathmeta"><span>' + num(mods) + " " + T("modules") + "</span><span>" + num(s.n) + " " + T("lessons") + "</span></div>" +
+        '<div class="bar"><i style="width:' + s.pct + '%"></i></div><span class="pathgo">' + T(s.d ? "cont" : "start") + (s.d ? ": " + esc(title(n)) : "") + ' <b aria-hidden="true">' + (lang === "fa" ? "←" : "→") + "</b></span></a>";
     }
     var pyArt = '<pre class="art" dir="ltr" aria-hidden="true">for idea in ideas:\n    print(idea.run())</pre>';
+    var mathArt = '<svg class="art curve" viewBox="0 0 240 70" aria-hidden="true"><path class="ax" d="M8 62H232M20 6V66"/><path class="cv" d="M22 60C70 58 95 8 130 8S190 52 230 56"/><path class="tg" d="M52 62L112 4"/><circle cx="82" cy="33" r="5"/><text x="150" y="40">∇f = 0</text></svg>';
     var aiArt = '<svg class="art net" viewBox="0 0 240 70" aria-hidden="true">' + netArt() + "</svg>";
-    app.innerHTML = '<section class="hero"><p class="kick">' + T("heroKick") + "</p><h1>" + T("heroT") + "</h1><p>" + T("heroP") + '</p></section><section class="paths">' + card("python", "py", "pyDesc", pyArt) + card("ai", "aip", "aiDesc", aiArt) + '</section><section class="feats">' +
-      [1, 2, 3, 4].map(function (i) { return "<div><h3>" + T("f" + i + "t") + "</h3><p>" + T("f" + i + "p") + "</p></div>"; }).join("") + "</section>";
+    var ICONS = ['<path d="M7 4l13 8-13 8z"/>', '<circle cx="8" cy="12" r="5"/><circle cx="16" cy="12" r="5"/>', '<path d="M4 18h16M6 18V9M12 18V5M18 18v-6"/>', '<path d="M5 12l5 5L20 6"/>'];
+    var nLabs = Object.keys(window.Demos || {}).length, arrow = lang === "fa" ? "←" : "→";
+    app.innerHTML = '<section class="hero"><div class="heroglow" aria-hidden="true"></div><p class="kick">' + T("heroKick") + "</p><h1>" + T("heroT") + '</h1><p class="lead">' + T("heroP") + "</p>" +
+      '<div class="herobtn"><a class="primary big" href="#/l/' + nextOf("python").id + '">' + T("ctaStart") + '</a><a class="ghostbtn big" href="#/play">' + T("ctaPlay") + "</a></div>" +
+      '<ul class="stats"><li><b>' + num(COURSE.lessons.length) + "</b>" + T("stLessons") + "</li><li><b>" + num(nLabs) + "</b>" + T("stLabs") + "</li><li><b>" + num(3) + "</b>" + T("stPaths") + "</li><li><b>" + num(2) + "</b>" + T("stLang") + "</li></ul></section>" +
+      '<h2 class="sect">' + T("pathsT") + '</h2><section class="paths">' + card("python", "py", "pyDesc", pyArt, 1) + card("math", "mth", "mathDesc", mathArt, 2) + card("ai", "aip", "aiDesc", aiArt, 3) + "</section>" +
+      '<section class="road"><b>' + T("roadT") + '</b><div class="roadline"><a class="py" href="#/t/python">' + T("python") + "</a><i>" + arrow + '</i><a class="mth" href="#/t/math">' + T("math") + "</a><i>" + arrow + '</i><a class="aip" href="#/t/ai">' + T("ai") + "</a></div><p>" + T("roadP") + "</p></section>" +
+      '<h2 class="sect">' + T("featsT") + '</h2><section class="feats">' +
+      [1, 2, 3, 4].map(function (i) { return '<div><span class="ficon"><svg viewBox="0 0 24 24">' + ICONS[i - 1] + "</svg></span><h3>" + T("f" + i + "t") + "</h3><p>" + T("f" + i + "p") + "</p></div>"; }).join("") + "</section>";
   }
   function netArt() {
     var c = [[20, [15, 35, 55]], [85, [10, 28, 45, 62]], [150, [10, 28, 45, 62]], [220, [25, 45]]], s = "";
@@ -141,7 +155,7 @@
   function viewTrack(tr) {
     if (!COURSE.tracks[tr]) return view404();
     var s = trackStats(tr), n = nextOf(tr);
-    app.innerHTML = '<div class="layout">' + sidebar(tr) + '<main class="main"><nav class="crumb"><a href="#/">' + T("home") + "</a><span>/</span><b>" + esc(name(COURSE.tracks[tr])) + "</b></nav><h1>" + esc(name(COURSE.tracks[tr])) + '</h1><div class="progress"><span>' + T("progress") + ": " + num(s.d) + " / " + num(s.n) + '</span><div class="bar"><i style="width:' + s.pct + '%"></i></div><a class="primary" href="#/l/' + n.id + '">' + T(s.d ? "cont" : "start") + '</a></div><div class="modgrid">' +
+    app.innerHTML = '<div class="layout tr-' + tr + '">' + sidebar(tr) + '<main class="main"><nav class="crumb"><a href="#/">' + T("home") + "</a><span>/</span><b>" + esc(name(COURSE.tracks[tr])) + "</b></nav><h1>" + esc(name(COURSE.tracks[tr])) + '</h1><div class="progress"><span>' + T("progress") + ": " + num(s.d) + " / " + num(s.n) + '</span><div class="bar"><i style="width:' + s.pct + '%"></i></div><a class="primary" href="#/l/' + n.id + '">' + T(s.d ? "cont" : "start") + '</a></div><div class="modgrid">' +
       COURSE.tracks[tr].modules.map(function (m, i) {
         return '<section class="mod"><h2><span>' + num(i + 1) + "</span>" + esc(name(m)) + "</h2><ol>" + m.lessons.map(function (l) { return '<li class="' + (done[l.id] ? "ok" : "") + '"><a href="#/l/' + l.id + '">' + esc(title(l)) + "</a></li>"; }).join("") + "</ol></section>";
       }).join("") + "</div></main></div>";
@@ -156,7 +170,7 @@
       return '<nav class="pager">' + (p ? '<a href="#/l/' + p.id + '"><small>' + T("prev") + "</small>" + esc(title(p)) + "</a>" : "<span></span>") + '<a class="mid" href="#/">' + T("backHome") + "</a>" + (n ? '<a href="#/l/' + n.id + '" class="nx"><small>' + T("next") + "</small>" + esc(title(n)) + "</a>" : '<a href="#/t/' + l.track + '" class="nx"><small>' + T("backTrack") + "</small>" + esc(name(COURSE.tracks[l.track])) + "</a>") + "</nav>";
     }
     var badge = l.project ? '<p class="pbadge">' + T("projectBadge") + "</p>" : "";
-    app.innerHTML = '<div class="layout">' + sidebar(l.track, l.id) + '<main class="main lesson"><nav class="crumb"><a href="#/">' + T("home") + '</a><span>/</span><a href="#/t/' + l.track + '">' + esc(name(COURSE.tracks[l.track])) + "</a><span>/</span><b>" + esc(name(mod)) + "</b></nav>" + badge + "<h1>" + esc(title(l)) + '</h1><article class="prose">' + md(l[lang][1]) + '</article><div id="labHost"></div><div id="codeHost"></div><div id="exHost"></div><div id="quizHost"></div><button class="finish ' + (done[id] ? "is" : "") + '" id="finish">' + T(done[id] ? "isDone" : "markDone") + "</button>" + pager() + "</main></div>";
+    app.innerHTML = '<div class="layout tr-' + l.track + '">' + sidebar(l.track, l.id) + '<main class="main lesson"><nav class="crumb"><a href="#/">' + T("home") + '</a><span>/</span><a href="#/t/' + l.track + '">' + esc(name(COURSE.tracks[l.track])) + "</a><span>/</span><b>" + esc(name(mod)) + "</b></nav>" + badge + "<h1>" + esc(title(l)) + '</h1><p class="lmeta"><span>' + T("lessonN") + " " + num(i + 1) + " / " + num(seq.length) + "</span>" + (l.code.length ? "<span>" + num(l.code.length) + " " + T("mCode") + "</span>" : "") + (l.quiz.length ? "<span>" + num(l.quiz.length) + " " + T("mQuiz") + "</span>" : "") + (l.ex.length ? "<span>" + num(l.ex.length) + " " + T("mEx") + "</span>" : "") + '</p><article class="prose">' + md(l[lang][1]) + '</article><div id="labHost"></div><div id="codeHost"></div><div id="exHost"></div><div id="quizHost"></div><button class="finish ' + (done[id] ? "is" : "") + '" id="finish">' + T(done[id] ? "isDone" : "markDone") + "</button>" + pager() + "</main></div>";
     var cells = [];
     app.querySelectorAll(".walk").forEach(function (w) { mountWalk(w, w.dataset.w, lang); });
     app.querySelectorAll(".labslot").forEach(function (w) { if (Demos[w.dataset.l]) mountLab(w, w.dataset.l); });
@@ -280,6 +294,9 @@
     document.title = (document.querySelector("#app h1") ? document.querySelector("#app h1").textContent + " | " : "") + T("brand");
   }
 
+  // Thin reading-progress line under the top bar.
+  var rp = document.createElement("div"); rp.className = "readbar"; document.body.appendChild(rp);
+  window.addEventListener("scroll", function () { var h = document.documentElement.scrollHeight - innerHeight; rp.style.transform = "scaleX(" + (h > 0 ? Math.min(1, scrollY / h) : 0) + ")"; }, { passive: true });
   window.addEventListener("hashchange", route);
   $("langBtn").onclick = function () { lang = lang === "fa" ? "en" : "fa"; store.set("lang", lang); route(); };
   $("themeBtn").onclick = function () { var t = document.documentElement.dataset.theme === "dark" ? "light" : "dark"; document.documentElement.dataset.theme = t; store.set("theme", t); };

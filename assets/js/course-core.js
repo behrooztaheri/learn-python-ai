@@ -2,6 +2,7 @@
 window.COURSE = {
   tracks: {
     python: { fa: "پایتون", en: "Python", modules: [] },
+    math: { fa: "ریاضیات هوش مصنوعی", en: "Math for AI", modules: [] },
     ai: { fa: "هوش مصنوعی", en: "Artificial Intelligence", modules: [] }
   },
   lessons: []
@@ -51,14 +52,14 @@ window.R = String.raw;
   // DROP("id", ...) removes lessons that a newer, more detailed set of lessons replaces.
   window.DROP = function () {
     var ids = [].slice.call(arguments);
-    ["python", "ai"].forEach(function (t) { COURSE.tracks[t].modules.forEach(function (m) { m.lessons = m.lessons.filter(function (l) { return ids.indexOf(l.id) < 0; }); }); });
+    Object.keys(COURSE.tracks).forEach(function (t) { COURSE.tracks[t].modules.forEach(function (m) { m.lessons = m.lessons.filter(function (l) { return ids.indexOf(l.id) < 0; }); }); });
     COURSE.lessons = COURSE.lessons.filter(function (l) { return ids.indexOf(l.id) < 0; });
   };
 
   // Rebuild the reading order after all data files have loaded.
   window.FinishCourse = function () {
     var all = [];
-    ["python", "ai"].forEach(function (t) { COURSE.tracks[t].modules.forEach(function (m) { all = all.concat(m.lessons); }); });
+    Object.keys(COURSE.tracks).forEach(function (t) { COURSE.tracks[t].modules.forEach(function (m) { all = all.concat(m.lessons); }); });
     COURSE.lessons = all;
   };
 
