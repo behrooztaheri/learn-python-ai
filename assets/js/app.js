@@ -33,7 +33,8 @@
     pyFail: ["پایتون بارگذاری نشد. اتصال اینترنت را بررسی کن یا از دکمه Colab استفاده کن.", "Python could not be loaded. Check your connection or use the Colab button."],
     stopped: ["اجرا متوقف شد.", "Stopped."], stdin: ["ورودی برنامه (هر خط یک ورودی):", "Program input (one value per line):"], colabOnly: ["این کد فقط در Colab یا کامپیوتر خودت اجرا می‌شود", "This code runs in Colab or on your own computer"],
     labsT: ["آزمایشگاه‌های تعاملی", "Interactive labs"], labsP: ["هر آزمایشگاه یک مفهوم را زنده نشان می‌دهد.", "Each lab shows one idea live."], openLesson: ["رفتن به درس", "Open the lesson"],
-    pgT: ["محیط کدنویسی آزاد", "Free playground"], pgP: ["هر کد پایتونی را اینجا بنویس. numpy، pandas، matplotlib و scikit-learn در دسترس هستند.", "Write any Python here. numpy, pandas, matplotlib and scikit-learn are available."],
+    pgT: ["محیط کدنویسی آزاد", "Free playground"], pgP: ["هر کد پایتونی را اینجا بنویس. چند تب بساز، فایل داده‌ات را آپلود کن و کدت را دانلود کن. numpy، pandas، scipy، scikit-learn، matplotlib، sympy، statsmodels و networkx آماده‌اند و کتابخانه‌های دیگر را با دکمه نصب یا دستور ~%pip install نام~ اضافه کن. همه چیز فقط روی مرورگر خودت ذخیره می‌شود.", "Write any Python here. Open several tabs, upload your data file and download your code. numpy, pandas, scipy, scikit-learn, matplotlib, sympy, statsmodels and networkx are ready, and you can add other packages with the Install button or ~%pip install name~. Everything is saved only in your own browser."],
+    installing: ["در حال نصب کتابخانه‌ها...", "Installing packages..."], toPg: ["محیط کدنویسی", "Playground"],
     gloT: ["واژه‌نامه", "Glossary"], results: ["نتیجه جستجو برای", "Results for"], none: ["چیزی پیدا نشد.", "Nothing found."],
     aboutT: ["درباره مدرس", "About the instructor"], aboutRole: ["نویسنده، طراح و مدرس این دوره", "Author, designer and instructor of this course"],
     aboutP: ["این مجموعه برای دانشجویان و علاقه‌مندان همه رشته‌ها طراحی شده است تا پایتون و هوش مصنوعی را از پایه و با تمرین عملی یاد بگیرند.", "This course is designed for students and enthusiasts from every field, to learn Python and AI from the ground up through practice."],
@@ -75,6 +76,7 @@
       else if (b[0] === "|") out.push(table(b));
       else if (/^\[\[c:\d+\]\]$/.test(b)) out.push('<div class="codeslot" data-c="' + b.match(/\d+/)[0] + '"></div>');
       else if (b.indexOf("[[fig:") === 0) { var f = b.slice(6, -2).split("|"); out.push('<figure><img loading="lazy" src="assets/img/lessons/' + esc(f[0]) + '" alt="' + esc(f[1] || "") + '"><figcaption>' + inline(f[1] || "") + "</figcaption></figure>"); }
+      else if (b.indexOf("[[lab:") === 0) out.push('<div class="labslot" data-l="' + esc(b.slice(6, -2)) + '"></div>');
       else if (b.indexOf("[[walk:") === 0) out.push('<div class="walk" data-w="' + esc(b.slice(7, -2)) + '"></div>');
       else if (b.indexOf("[[cm:") === 0) out.push(confusion(b.slice(5, -2).split(",").map(Number)));
       else if (b.indexOf("$$") === 0) out.push('<div class="math" dir="ltr">' + esc(b) + "</div>");
@@ -157,6 +159,7 @@
     app.innerHTML = '<div class="layout">' + sidebar(l.track, l.id) + '<main class="main lesson"><nav class="crumb"><a href="#/">' + T("home") + '</a><span>/</span><a href="#/t/' + l.track + '">' + esc(name(COURSE.tracks[l.track])) + "</a><span>/</span><b>" + esc(name(mod)) + "</b></nav>" + badge + "<h1>" + esc(title(l)) + '</h1><article class="prose">' + md(l[lang][1]) + '</article><div id="labHost"></div><div id="codeHost"></div><div id="exHost"></div><div id="quizHost"></div><button class="finish ' + (done[id] ? "is" : "") + '" id="finish">' + T(done[id] ? "isDone" : "markDone") + "</button>" + pager() + "</main></div>";
     var cells = [];
     app.querySelectorAll(".walk").forEach(function (w) { mountWalk(w, w.dataset.w, lang); });
+    app.querySelectorAll(".labslot").forEach(function (w) { if (Demos[w.dataset.l]) mountLab(w, w.dataset.l); });
     var placed = {};
     app.querySelectorAll(".codeslot").forEach(function (s) {
       var i = +s.dataset.c; if (!l.code[i]) return;
@@ -222,21 +225,29 @@
   }
 
   function viewLabs() {
+    // Labs are listed first and only built when opened, so the page stays fast.
     var byDemo = {};
-    COURSE.lessons.forEach(function (l) { if (l.demo && !byDemo[l.demo]) byDemo[l.demo] = l; });
-    app.innerHTML = '<main class="page"><h1>' + T("labsT") + "</h1><p>" + T("labsP") + '</p><div id="labs"></div></main>';
+    COURSE.lessons.forEach(function (l) {
+      if (l.demo && !byDemo[l.demo]) byDemo[l.demo] = l;
+      (l.fa[1].match(/\[\[lab:[\w-]+\]\]/g) || []).forEach(function (m) { var k = m.slice(6, -2); if (!byDemo[k]) byDemo[k] = l; });
+    });
+    app.innerHTML = '<main class="page"><h1>' + T("labsT") + "</h1><p>" + T("labsP") + '</p><div id="labs" class="lablist"></div></main>';
     var h = $("labs");
     Object.keys(Demos).forEach(function (k) {
-      mountLab(h, k);
-      if (byDemo[k]) { var a = document.createElement("a"); a.className = "lablink"; a.href = "#/l/" + byDemo[k].id; a.textContent = T("openLesson"); h.lastChild.appendChild(a); }
+      var d = document.createElement("details"); d.className = "labitem";
+      var l = byDemo[k];
+      d.innerHTML = "<summary><b>" + esc(Demos[k].title[lang]) + "</b>" + (l ? "<small>" + esc(name(COURSE.tracks[l.track])) + " · " + esc(title(l)) + "</small>" : "") + "</summary>";
+      d.addEventListener("toggle", function () {
+        if (!d.open || d.dataset.on) return; d.dataset.on = 1;
+        mountLab(d, k);
+        if (l) { var a = document.createElement("a"); a.className = "lablink"; a.href = "#/l/" + l.id; a.textContent = T("openLesson"); d.appendChild(a); }
+      });
+      h.appendChild(d);
     });
   }
   function viewPlay() {
-    app.innerHTML = '<main class="page"><h1>' + T("pgT") + "</h1><p>" + T("pgP") + '</p><div id="pg"></div></main>';
-    var el = Runner.cell({ src: store.get("pg", 'import numpy as np\nimport matplotlib.pyplot as plt\n\nx = np.linspace(0, 10, 200)\nplt.plot(x, np.sin(x))\nplt.title("Hello from your browser")\nplt.show()\nprint("Mean of sin(x):", np.sin(x).mean().round(4))') }, null, T, lang);
-    $("pg").appendChild(el); el._refresh();
-    var cm = el.querySelector(".CodeMirror");
-    if (cm && cm.CodeMirror) cm.CodeMirror.on("change", function (c) { store.set("pg", c.getValue()); });
+    app.innerHTML = '<main class="page wide"><h1>' + T("pgT") + "</h1><p>" + inline(T("pgP")) + '</p><div id="pg"></div></main>';
+    Playground.mount($("pg"), lang);
   }
   function viewGlossary() {
     app.innerHTML = '<main class="page"><h1>' + T("gloT") + '</h1><dl class="glossary">' + window.GLOSSARY.map(function (g) { return "<div><dt>" + esc(g[0]) + " <small dir='ltr'>" + esc(g[1]) + "</small></dt><dd>" + esc(lang === "fa" ? g[2] : g[3]) + "</dd></div>"; }).join("") + "</dl></main>";

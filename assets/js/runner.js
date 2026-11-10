@@ -1,16 +1,20 @@
 /* Editable code cells: copy, reset, run in the browser, open in Google Colab. */
 window.Runner = (function () {
-  var worker = null, state = "off", queue = null, current = null, onState = [];
+  var worker = null, state = "off", queue = null, current = null, onState = [], onFiles = [], gets = {};
 
   function setState(s) { state = s; onState.forEach(function (f) { f(s); }); }
   function start() {
-    worker = new Worker("assets/js/py-worker.js");
+    worker = new Worker("assets/js/py-worker.js?v=" + (window.SITE_VERSION || 1));
     setState("loading");
     worker.onmessage = function (e) {
       var m = e.data;
       if (m.type === "ready") { setState("ready"); if (queue) { var q = queue; queue = null; send(q); } return; }
+      if (m.type === "files") { onFiles.forEach(function (f) { f(m.list); }); return; }
+      if (m.type === "file") { if (gets[m.name]) { gets[m.name](m.data); delete gets[m.name]; } return; }
       if (m.type === "fatal") { setState("failed"); if (current) current.fail(m.text); return; }
       if (!current) return;
+      if (m.type === "clear") { if (current.clear) current.clear(); return; }
+      if (m.type === "info") { if (current.info) current.info(m.text); return; }
       if (m.type === "out") current.out(m.text, false);
       if (m.type === "err") current.out(m.text, true);
       if (m.type === "img") current.img(m.data);
@@ -40,6 +44,13 @@ window.Runner = (function () {
     if (c) c.stopped();
     if (q) q.stopped();
   }
+
+  // Files in the browser's Python folder: upload, download, delete, list.
+  function ensure() { if (!worker) start(); return worker; }
+  function put(name, buf) { ensure().postMessage({ type: "put", name: name, data: buf }, [buf]); }
+  function get(name) { return new Promise(function (res) { gets[name] = res; ensure().postMessage({ type: "get", name: name }); }); }
+  function rm(name) { ensure().postMessage({ type: "rm", name: name }); }
+  function ls() { if (worker) worker.postMessage({ type: "ls" }); }
 
   function colabUrl(id, lang) {
     var owner = SITE.owner, repo = SITE.repo, h = location.hostname;
@@ -120,6 +131,12 @@ window.Runner = (function () {
       bReset.onclick = function () { set(item.src); out.innerHTML = ""; out.hidden = true; say(""); };
       actions.appendChild(bReset);
     }
+    if (editable && window.Playground) {
+      var bPg = btn("", T("toPg"), '<svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/></svg>');
+      bPg.title = T("toPg");
+      bPg.onclick = function () { Playground.adopt((id || "exercise") + ".py", get()); };
+      actions.appendChild(bPg);
+    }
     var url = editable && id ? colabUrl(id, lang) : null;
     if (url) {
       var a = document.createElement("a"); a.className = "cbtn colab"; a.href = url; a.target = "_blank"; a.rel = "noopener";
@@ -133,6 +150,8 @@ window.Runner = (function () {
       Runner.run({
         code: get(), stdin: stdin ? stdin.value.split("\n") : [],
         waiting: function () { say(T("loadingPy")); },
+        info: function (t) { say(T(t === "installing" ? "installing" : "running")); },
+        clear: function () { out.innerHTML = ""; out.hidden = true; },
         out: function (t, e) { say(T("running")); pre(t, e); },
         img: function (d) { out.hidden = false; var i = new Image(); i.src = "data:image/png;base64," + d; i.alt = "plot"; out.appendChild(i); },
         done: function (failed) { setBtn(false); say(failed ? T("runError") : ""); if (!failed && !out.childNodes.length) say(T("noOutput")); },
@@ -155,5 +174,7 @@ window.Runner = (function () {
     return wrap;
   }
 
-  return { run: run, stop: stop, cell: cell, colabUrl: colabUrl };
+  return { run: run, stop: stop, cell: cell, colabUrl: colabUrl, put: put, get: get, rm: rm, ls: ls, ICON: ICON,
+    onFiles: function (f) { onFiles.push(f); }, offFiles: function (f) { onFiles = onFiles.filter(function (g) { return g !== f; }); },
+    state: function () { return state; } };
 })();

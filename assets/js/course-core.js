@@ -30,8 +30,9 @@ window.R = String.raw;
     o.code = (o.code || []).map(norm);
     o.quiz = o.quiz || [];
     o.ex = o.ex || [];
-    var at = o.after ? cur.lessons.map(function (l) { return l.id; }).indexOf(o.after) : -1;
-    if (at >= 0) cur.lessons.splice(at + 1, 0, o); else cur.lessons.push(o);
+    var ids = cur.lessons.map(function (l) { return l.id; });
+    var at = o.after ? ids.indexOf(o.after) : -1, bt = o.before ? ids.indexOf(o.before) : -1;
+    if (at >= 0) cur.lessons.splice(at + 1, 0, o); else if (bt >= 0) cur.lessons.splice(bt, 0, o); else cur.lessons.push(o);
     COURSE.lessons.push(o);
   };
 
@@ -45,6 +46,13 @@ window.R = String.raw;
     l.code = l.code.concat((o.code || []).map(norm));
     l.ex = l.ex.concat(o.ex || []);
     l.quiz = l.quiz.concat(o.quiz || []);
+  };
+
+  // DROP("id", ...) removes lessons that a newer, more detailed set of lessons replaces.
+  window.DROP = function () {
+    var ids = [].slice.call(arguments);
+    ["python", "ai"].forEach(function (t) { COURSE.tracks[t].modules.forEach(function (m) { m.lessons = m.lessons.filter(function (l) { return ids.indexOf(l.id) < 0; }); }); });
+    COURSE.lessons = COURSE.lessons.filter(function (l) { return ids.indexOf(l.id) < 0; });
   };
 
   // Rebuild the reading order after all data files have loaded.
